@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "botasaurus"
-version = "3.3.28"
+version = "3.4.28-beta"
 description = "The All in One Web Scraping Framework"
 authors = ["Chetan Jain <chetan@omkar.cloud>"]
 license = "MIT"

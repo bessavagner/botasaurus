@@ -9,6 +9,7 @@ from selenium.common.exceptions import SessionNotCreatedException
 
 from .driver_about import AboutBrowser
 from .anti_detect_driver import AntiDetectDriver
+from .anti_detect_driver import AntiDetectCrawler
 from .user_agent import UserAgent, UserAgentInstance
 from .utils import get_current_profile_path,  read_json, relative_path, silentremove, write_json
 from .window_size import WindowSize, WindowSizeInstance
@@ -233,7 +234,8 @@ def create_selenium_driver(options, desired_capabilities, attempt_download=True)
 
     try:
         path = relative_path(get_driver_path(), 0)
-        driver = AntiDetectDriver(
+        # TODO: set a switch between AntiDetectDriver and AntiDetectCrawler
+        driver = AntiDetectCrawler(
             desired_capabilities=desired_capabilities,
             chrome_options=options,
             executable_path=path,
