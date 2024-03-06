@@ -40,3 +40,6 @@ local_storage.json
 profiles.json
 
 _todo_update/
+
+# notebooks
+.ipynb
