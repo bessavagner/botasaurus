@@ -7,7 +7,7 @@ license = "MIT"
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = ">=3.10,<4.0"
 packaging = "^23.2"
 psutil = "^5.9.8"
 javascript-fixes = "^1.1.18"
@@ -20,6 +20,10 @@ selenium = "4.5.0"
 botasaurus-proxy-authentication = "^1.0.12"
 capsolver-extension-python = "^1.0.1"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.3"
+ipython = "^8.22.2"
 
 [build-system]
 requires = ["poetry-core"]
