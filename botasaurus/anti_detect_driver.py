@@ -1212,7 +1212,7 @@ class AntiDetectCrawler(AntiDetectDriver):
             A BeautifulSoup object representing the parsed HTML of the current
             page.
         """
-        return BeautifulSoup(self.page_source(), parser=parser, **kwargs)
+        return BeautifulSoup(self.page_source, parser=parser, **kwargs)
 
     def make_dom(self, soup_parser="html.parser", **kwargs):
         """
