@@ -560,7 +560,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         result = wait.until(expected_condition((ATTR_SELECTOR[by], value)))
         return result
 
-    def find_elements(
+    def find_all(
         self,
         value: str,
         by: str = "id",
@@ -649,7 +649,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         TimeoutException
             If the condition is not met within the specified timeout.
         """
-        return self.find_elements(
+        return self.find_all(
             value,
             "xpath",
             expected_condition,
