@@ -8,7 +8,10 @@ from time import sleep
 from traceback import print_exc
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
@@ -521,7 +524,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         timeout=None,
         poll_frequency=0.5,
         ignored_exceptions=(NoSuchElementException,)
-    ) -> WebElement:
+    ) -> WebElement | list[WebElement] | None:
         """
         Finds an element on the web page using the specified locator strategy
         and waits until the element is present.
@@ -546,8 +549,9 @@ class AntiDetectCrawler(AntiDetectDriver):
 
         Returns
         -------
-        WebElement
-            The first matching element found.
+        WebElement, list[WebElement], None
+            The first matching element found, a list os elements (if adequate
+            expected_condition is given) or None if it finds nothing
 
         Raises
         ------
@@ -557,8 +561,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         if timeout is None:
             timeout = self.timeout
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
-        result = wait.until(expected_condition((ATTR_SELECTOR[by], value)))
-        return result
+        return wait.until(expected_condition((ATTR_SELECTOR[by], value)))
 
     def find_all(
         self,
@@ -741,7 +744,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         timeout=None,
         poll_frequency=0.5,
         ignored_exceptions=(NoSuchElementException,)
-    ):
+    ) -> WebElement | None:
         """
         Finds a child element of the specified web element using the specified
         locator strategy and waits until the element is visible.
@@ -769,7 +772,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         Returns
         -------
         WebElement
-            The first matching child element found.
+            The first matching child element found or None
 
         Raises
         ------
@@ -778,10 +781,9 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        descendant = wait.until(
+        return wait.until(
             lambda elem: element.find_element(ATTR_SELECTOR[by], value)
         )
-        return descendant
 
     def child_by_class_name(
         self,
@@ -791,7 +793,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         timeout=None,
         poll_frequency=0.5,
         ignored_exceptions=(NoSuchElementException,)
-    ):
+    ) -> WebElement | None:
         """
         Finds a child element of the specified web element by class name and
         waits until the element is visible.
@@ -816,7 +818,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         Returns
         -------
         WebElement
-            The first matching child element found by class name.
+            The first matching child element found by class name or None
 
         Raises
         ------
@@ -825,11 +827,10 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        descendant = wait.until(
+        return wait.until(
             lambda elem: element.find_element(
                 ATTR_SELECTOR['class name'], value)
         )
-        return descendant
 
     def children(
         self,
@@ -840,7 +841,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         timeout=None,
         poll_frequency=0.5,
         ignored_exceptions=(NoSuchElementException,)
-    ):
+    ) -> list[WebElement] | None:
         """
         Finds all child elements of the specified web element using the
         specified locator strategy and waits until at least one element is
@@ -878,10 +879,9 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        offspring = wait.until(
+        return wait.until(
             lambda elem: element.find_elements(ATTR_SELECTOR[by], value)
         )
-        return offspring
 
     def children_by_class_name(
         self,
@@ -891,7 +891,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         timeout=None,
         poll_frequency=0.5,
         ignored_exceptions=(NoSuchElementException,)
-    ):
+    ) -> list[WebElement] | None:
         """
         Finds all child elements of the specified web element by class name and
         waits until at least one element is visible.
@@ -921,7 +921,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         Raises
         ------
         TimeoutException
-            If the condition is not met within the specified timeout.
+            If the condition is not met within the specified timeout or None
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
@@ -986,7 +986,7 @@ class AntiDetectCrawler(AntiDetectDriver):
             element.
         by : str, default "id"
             The locator strategy to use, such as "id", "name", "xpath", etc.
-        expected_condition_element : Callable, default EC.presence_of_element_located  #noqa E501
+        expected_condition_element : Callable, default EC.presence_of_element_located  # noqa E501
             The expected condition to wait for, such as the presence of the
             element.
         expected_condition_click : Callable, default EC.element_to_be_clickable
@@ -1193,7 +1193,7 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         return self.run(DISPATCH_ENTER_SELECTOR.format(selector))
 
-    def make_soup(self, parser="html.parser", **kwargs):
+    def make_soup(self, parser="html.parser", features="lxml", **kwargs):
         """
         Parses the current page source using BeautifulSoup with the specified
         parser.
@@ -1212,7 +1212,9 @@ class AntiDetectCrawler(AntiDetectDriver):
             A BeautifulSoup object representing the parsed HTML of the current
             page.
         """
-        return BeautifulSoup(self.page_source, parser=parser, **kwargs)
+        return BeautifulSoup(
+            self.page_source, parser=parser, features=features, **kwargs
+        )
 
     def make_dom(self, soup_parser="html.parser", **kwargs):
         """
@@ -1254,8 +1256,7 @@ class AntiDetectCrawler(AntiDetectDriver):
             True if the element is displayed with the given value, False
             otherwise.
         """
-        script = is_display(value)
-        return self.run(script, element)
+        return self.run(is_display(value), element)
 
     def wait(
         self,
@@ -1284,9 +1285,12 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         if timeout is None:
             timeout = self.timeout
-        return WebDriverWait(
-            self, timeout, poll_frequency, ignored_exceptions
-        )
+        try:
+            return WebDriverWait(
+                self, timeout, poll_frequency, ignored_exceptions
+            )
+        except TimeoutException:
+            return None
 
     def switch_to_frame(self, value: str, by='id'):
         """
