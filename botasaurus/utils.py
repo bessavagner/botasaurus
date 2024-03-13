@@ -433,6 +433,13 @@ def is_display(
             f'Invalid display value "{value}". Valid are {DISPLAY_VALUES}.'
         )
     script = f"return arguments[0].style.display == '{value}';"
-    if WebElement is None:
+    if element is None:
+        return script
+    return script, element
+
+
+def set_class(class_list: str, element: WebElement = None):
+    script = f"return arguments[0].setAttribute('class', {class_list});"
+    if element is None:
         return script
     return script, element
