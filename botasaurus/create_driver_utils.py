@@ -2,7 +2,10 @@ from time import sleep
 import os
 from sys import argv
 from selenium.webdriver.chrome.options import Options
+# TODO adapt to upgraded selenium
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.chrome.service import Service as ChromeService
+
 from shutil import rmtree
 from .get_chrome_version import get_driver_path
 from selenium.common.exceptions import SessionNotCreatedException
@@ -235,10 +238,13 @@ def create_selenium_driver(options, desired_capabilities, attempt_download=True)
     try:
         path = relative_path(get_driver_path(), 0)
         # TODO: set a switch between AntiDetectDriver and AntiDetectCrawler
+        service = ChromeService(executable_path=path)
+        if desired_capabilities:
+            for name, value in desired_capabilities.items():
+                options.set_capability(name, value)
         driver = AntiDetectCrawler(
-            desired_capabilities=desired_capabilities,
-            chrome_options=options,
-            executable_path=path,
+            options=options,
+            servide=service,
         )
         return driver
     except SessionNotCreatedException as e:
