@@ -244,7 +244,7 @@ def create_selenium_driver(options, desired_capabilities, attempt_download=True)
                 options.set_capability(name, value)
         driver = AntiDetectCrawler(
             options=options,
-            servide=service,
+            service=service,
         )
         return driver
     except SessionNotCreatedException as e:
