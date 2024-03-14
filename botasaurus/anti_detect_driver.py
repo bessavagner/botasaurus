@@ -562,7 +562,10 @@ class AntiDetectCrawler(AntiDetectDriver):
         if timeout is None:
             timeout = self.timeout
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
-        return wait.until(expected_condition((ATTR_SELECTOR[by], value)))
+        try:
+            return wait.until(expected_condition((ATTR_SELECTOR[by], value)))
+        except TimeoutException:
+            return None
 
     def find_all(
         self,
@@ -701,9 +704,13 @@ class AntiDetectCrawler(AntiDetectDriver):
             The element to which the key was sent.
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
-        wait.until(expected_condition(element)).send_keys(key)
+        try:
+            wait.until(expected_condition(element)).send_keys(key)
+        except TimeoutException:
+            return None
         if enter:
             element.send_keys(Key.enter)
+        return element
 
     def send(
         self,
@@ -726,7 +733,7 @@ class AntiDetectCrawler(AntiDetectDriver):
             poll_frequency=poll_frequency,
             ignored_exceptions=ignored_exceptions
         )
-        self.send_to(
+        return self.send_to(
             element,
             key,
             expected_condition=expected_condition_send,
@@ -782,9 +789,12 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        return wait.until(
-            lambda elem: element.find_element(ATTR_SELECTOR[by], value)
-        )
+        try:
+            return wait.until(
+                lambda elem: element.find_element(ATTR_SELECTOR[by], value)
+            )
+        except TimeoutException:
+            return None
 
     def child_by_class_name(
         self,
@@ -828,10 +838,13 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        return wait.until(
-            lambda elem: element.find_element(
-                ATTR_SELECTOR['class name'], value)
-        )
+        try:
+            return wait.until(
+                lambda elem: element.find_element(
+                    ATTR_SELECTOR['class name'], value)
+            )
+        except TimeoutException:
+            return None
 
     def children(
         self,
@@ -880,9 +893,12 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        return wait.until(
-            lambda elem: element.find_elements(ATTR_SELECTOR[by], value)
-        )
+        try:
+            return wait.until(
+                lambda elem: element.find_elements(ATTR_SELECTOR[by], value)
+            )
+        except TimeoutException:
+            return None
 
     def children_by_class_name(
         self,
@@ -926,11 +942,13 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
         wait.until(expected_condition(element))
-        offspring = wait.until(
-            lambda elem: element.find_elements(
-                ATTR_SELECTOR['class name'], value)
-        )
-        return offspring
+        try:
+            return wait.until(
+                lambda elem: element.find_elements(
+                    ATTR_SELECTOR['class name'], value)
+            )
+        except TimeoutException:
+            return None
 
     def click_element(
         self,
@@ -964,7 +982,11 @@ class AntiDetectCrawler(AntiDetectDriver):
             If the condition is not met within the specified timeout.
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
-        wait.until(expected_condition(element)).click()
+        try:
+            wait.until(expected_condition(element)).click()
+            return element
+        except TimeoutException:
+            return None
 
     def click(
         self,
@@ -1013,7 +1035,7 @@ class AntiDetectCrawler(AntiDetectDriver):
             poll_frequency=poll_frequency,
             ignored_exceptions=ignored_exceptions
         )
-        self.click_element(
+        return self.click_element(
             element,
             expected_condition=expected_condition_click,
             timeout=timeout,
@@ -1059,10 +1081,14 @@ class AntiDetectCrawler(AntiDetectDriver):
             If the condition is not met within the specified timeout.
         """
         wait = self.wait(timeout, poll_frequency, ignored_exceptions)
-        for _ in range(n_times):
-            wait.until(expected_condition(element)).send_keys(Key.down)
-        if enter:
-            wait.until(expected_condition(element)).send_keys(Key.enter)
+        try:
+            for _ in range(n_times):
+                wait.until(expected_condition(element)).send_keys(Key.down)
+            if enter:
+                wait.until(expected_condition(element)).send_keys(Key.enter)
+        except TimeoutException:
+            return None
+        return element
 
     def soup_of(
         self,
@@ -1289,12 +1315,9 @@ class AntiDetectCrawler(AntiDetectDriver):
         """
         if timeout is None:
             timeout = self.timeout
-        try:
-            return WebDriverWait(
-                self, timeout, poll_frequency, ignored_exceptions
-            )
-        except TimeoutException:
-            return None
+        return WebDriverWait(
+            self, timeout, poll_frequency, ignored_exceptions
+        )
 
     def switch_to_frame(self, value: str, by='id'):
         """
