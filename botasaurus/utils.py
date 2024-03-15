@@ -439,7 +439,7 @@ def is_display(
 
 
 def set_class(class_list: str, element: WebElement = None):
-    script = f"return arguments[0].setAttribute('class', {class_list});"
+    script = f"return arguments[0].setAttribute('class', '{class_list}');"
     if element is None:
         return script
     return script, element
