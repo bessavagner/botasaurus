@@ -1,5 +1,6 @@
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import  StaleElementReferenceException
+from selenium.common.exceptions import  NoSuchWindowException
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -1318,6 +1319,68 @@ class AntiDetectCrawler(AntiDetectDriver):
         return WebDriverWait(
             self, timeout, poll_frequency, ignored_exceptions
         )
+
+    def tab_handle(self):
+        """
+        Retrieves the handle of the current window (tab) of the web driver.
+
+        Returns
+        -------
+        str
+            The handle of the current window (tab) of the web driver.
+        """
+        return self.current_window_handle
+
+    def tabs(self):
+        """
+        Retrieves a list of handles for all open windows (tabs) of the web
+        driver.
+
+        Returns
+        -------
+        list[str]
+            A list of handles for all open windows (tabs) of the web driver.
+        """
+        return self.window_handles
+
+    def switch_to_tab(self, index: int):
+        """
+        Switches the web driver's focus to the tab at the specified index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the tab to switch to.
+
+        Raises
+        ------
+        IndexError
+            If the index is out of range of the available tabs.
+        """
+        tabs = self.tabs()
+        if len(tabs) <= index:
+            logger.warning(
+                "Trying to switch to tab nº %d, but there are only %d tabs",
+                index,
+                len(tabs),
+            )
+        else:
+            self.switch_to.window(tabs[index])
+
+    def close_tab(self):
+        """
+        Attempts to close the current tab of the web driver. If the current
+        tab cannot be closed, it switches to the first tab and closes it.
+
+        Raises
+        ------
+        NoSuchWindowException
+            If the current tab cannot be closed.
+        """
+        try:
+            self.close()
+        except NoSuchWindowException:
+            self.switch_to_tab(0)
 
     def switch_to_frame(self, value: str, by='id'):
         """
