@@ -36,6 +36,7 @@ from .utils import (
     document_query_selector,
     document_query_selector_all,
     is_display,
+    set_attribute,
     set_class,
     Key,
     ATTR_SELECTOR,
@@ -1285,6 +1286,9 @@ class AntiDetectCrawler(AntiDetectDriver):
             otherwise.
         """
         return self.run(is_display(value), element)
+
+    def set_attribute(self, element: WebElement, attribute: str, value: str):
+        return self.run(set_attribute(attribute, value), element)
 
     def set_class(self, element: WebElement, value: str):
         return self.run(set_class(value), element)
